@@ -83,7 +83,7 @@ public class DatabaseInit implements CommandLineRunner {
     private Attraction createAttractionEntity(String[] fields) {
         return new Attraction(
                 getProperString(fields[0]),
-                cityRepository.findByName(getProperString(fields[1])),
+                cityRepository.findByNameIgnoreCase(getProperString(fields[1])),
                 getProperString(fields[2]),
                 fields[3].equals("null") ? null :
                 BigDecimal.valueOf(Integer.parseInt(fields[3])),
@@ -96,7 +96,7 @@ public class DatabaseInit implements CommandLineRunner {
     private Attraction createEventEntity(String[] fields) {
         return new Event(
                 getProperString(fields[0]),
-                cityRepository.findByName(getProperString(fields[1])),
+                cityRepository.findByNameIgnoreCase(getProperString(fields[1])),
                 getProperString(fields[2]),
                 fields[3].equals("null") ? null :
                         BigDecimal.valueOf(Integer.parseInt(fields[3])),
