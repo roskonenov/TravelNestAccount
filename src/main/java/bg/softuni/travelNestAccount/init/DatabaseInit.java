@@ -10,10 +10,14 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -21,20 +25,18 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
 public class DatabaseInit implements CommandLineRunner {
 
-    private static final String ATTRACTIONS_INPUT_FILE_PATH = "src/main/resources/attractions.txt";
-    
-    private static final String EVENTS_INPUT_FILE_PATH = "src/main/resources/events.txt";
-    
     private static final Logger LOGGER = LoggerFactory.getLogger(DatabaseInit.class);
 
     private final CityRepository cityRepository;
 
     private final PasswordEncoder passwordEncoder;
+
     private final AttractionRepository attractionRepository;
 
 
@@ -62,7 +64,7 @@ public class DatabaseInit implements CommandLineRunner {
     private void attractionsInit() throws IOException {
         if (attractionRepository.count() != 0) return;
 
-        Files.readAllLines(Path.of(ATTRACTIONS_INPUT_FILE_PATH))
+        readFileFromResources("attractions.txt")
                 .forEach(line -> {
                     String[] fields = line.split("\\s+");
                     attractionRepository.saveAndFlush(createAttractionEntity(fields));
@@ -71,9 +73,9 @@ public class DatabaseInit implements CommandLineRunner {
 
     private void eventsInit() throws IOException {
         if (attractionRepository.count() !=
-        Files.readAllLines(Path.of(ATTRACTIONS_INPUT_FILE_PATH)).size()) return;
+        readFileFromResources("attractions.txt").size()) return;
 
-        Files.readAllLines(Path.of(EVENTS_INPUT_FILE_PATH))
+        readFileFromResources("events.txt")
                 .forEach(line -> {
                     String[] fields = line.split("\\s+");
                     attractionRepository.saveAndFlush(createEventEntity(fields));
@@ -111,5 +113,16 @@ public class DatabaseInit implements CommandLineRunner {
 
     private static String getProperString(String text) {
         return text.replaceAll("_", " ");
+    }
+
+    private List<String> readFileFromResources(String fileName) throws IOException {
+        try (InputStream inputStream =
+                     new ClassPathResource(fileName).getInputStream()) {
+
+            return new BufferedReader(
+                    new InputStreamReader(inputStream))
+                    .lines()
+                    .toList();
+        }
     }
 }
